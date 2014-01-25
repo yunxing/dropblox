@@ -280,22 +280,28 @@ void Board::remove_rows(Bitmap* new_bitmap) {
 string pick_move(Board board) {
   Block* block = board.block;
   for (int i = 0; i < 4; ++i) {
-    block->translation.i = 0;
-    block->translation.j = 0;
     block->rotate();
     while (board.check(*block)) {
       block->left();
-      while (board.check(*block)) {
-        Board new_board = board.place();
-      }
+      Point prev_translation = block->translation;
+      int prev_rotation = block->rotation;
+      Board* new_board = board.place();
+      // calculate score
+      block->translation = prev_translation;
+      block->rotation = prev_rotation;
     }
+
     block->translation.i = 0;
     block->translation.j = 0;
+
     while (board.check(*block)) {
       block->right();
-      while (board.check(*block)) {
-        Board new_board = board.place();
-      }
+      Point prev_translation = block->translation;
+      int prev_rotation = block->rotation;
+      Board* new_board = board.place();
+      // calculate score
+      block->translation = prev_translation;
+      block->rotation = prev_rotation;
     }
   }
 }
