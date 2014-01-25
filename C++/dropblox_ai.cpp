@@ -321,6 +321,26 @@ int get_row_transitions(Board &board) {
     return transitions;
 }
 
+// get column transitions
+int get_col_transitions(Board &board) {
+    int transitions = 0;
+    int cell, last_cell = 1;
+    for (int j = 0; j < COLS; j++) {
+        for (int i = 0; i < ROWS; i++) {
+            cell = board.bitmap[i][j];
+            if (cell != last_cell) {
+                ++transitions;
+            }
+            last_cell = cell;
+        }
+        if (cell == 0) {
+            ++transitions;
+        }
+        last_cell = 1;
+    }
+    return transitions;
+}
+
 string pick_move(Board board) {
   Block* block = board.block;
   for (int i = 0; i < 4; ++i) {
