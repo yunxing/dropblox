@@ -376,6 +376,7 @@ int get_well_sum(Board *board) {
 #define ROWS_REMOVED 0.378565931393
 #define ROW_TRANSITIONS -0.548886169599
 #define LANDING_HEIGHT -0.71240334146
+#define POINTS_EARNED 0.378565931393
 #define HOLES -1.99902287016
 #define WELL_SUMS -0.151923526632
 #define COL_TRANSITIONS -0.793256698244
@@ -392,9 +393,11 @@ float calc_score(Board board) {
   int row_transitions = get_row_transitions(new_board);
   int col_transitions = get_col_transitions(new_board);
   int well_sum = get_well_sum(new_board);
+  int points = points_earned(row_removed);
   score = row_removed * ROWS_REMOVED + landing_height * LANDING_HEIGHT
     + number_of_holes * HOLES + row_transitions * ROW_TRANSITIONS
-    + col_transitions * COL_TRANSITIONS + well_sum * WELL_SUMS;
+    + col_transitions * COL_TRANSITIONS + well_sum * WELL_SUMS
+    + points * POINTS_EARNED;
 
   block->translation = prev_translation;
   block->rotation = prev_rotation;
