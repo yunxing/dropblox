@@ -284,6 +284,10 @@ int get_landing_height(Block* block) {
     return block->center.i;
 }
 
+static int points_earned(int rows_cleared) {
+  return (1 << rows_cleared) - 1;
+}
+
 // get the number of holes in the board
 int get_number_of_holes(Board *board) {
     int holes = 0;
