@@ -277,6 +277,27 @@ void Board::remove_rows(Bitmap* new_bitmap) {
   }
 }
 
+// get the landing height
+int get_landing_height(Board &board) {
+    return board.block->center.i;
+}
+
+// get the number of holes in the board
+int get_number_of_holes(Board &board) {
+    int holes = 0;
+    for (int i = ROWS - 1; i >= 0; i--) {
+        int row_holes = 0;
+        for (int j = 0; j < COLS; j++) {
+            if (board.bitmap[i][j] == 0) {
+                row_holes++;
+            }
+        }
+        if (row_holes == COLS) continue;
+        holes += row_holes;
+    }
+    return holes;
+}
+
 string pick_move(Board board) {
   Block* block = board.block;
   for (int i = 0; i < 4; ++i) {
