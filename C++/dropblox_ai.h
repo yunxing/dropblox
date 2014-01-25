@@ -99,8 +99,8 @@ class Board {
 
   // A static method that takes in a new_bitmap and removes any full rows from it.
   // Mutates the new_bitmap in place.
-  static void remove_rows(Bitmap* new_bitmap);
- 
+  static int remove_rows(Bitmap* new_bitmap);
+
  private:
   Board();
 };

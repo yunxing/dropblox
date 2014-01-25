@@ -190,9 +190,10 @@ Board* Board::do_commands(const vector<string>& commands) {
   if (!check(*block)) {
     throw Exception("Block started in an invalid position");
   }
+  int row_removed;
   for (int i = 0; i < commands.size(); i++) {
     if (commands[i] == "drop") {
-      return place();
+      return place(row_removed);
     } else {
       block->do_command(commands[i]);
       if (!check(*block)) {
@@ -201,7 +202,7 @@ Board* Board::do_commands(const vector<string>& commands) {
     }
   }
   // If we've gotten here, there was no "drop" command. Drop anyway.
-  return place();
+  return place(row_removed);
 }
 
 // Drops the block from whatever position it is currently at. Returns a
@@ -213,7 +214,7 @@ Board* Board::do_commands(const vector<string>& commands) {
 //
 // If there are no blocks left in the preview list, this method will fail badly!
 // This is okay because we don't expect to look ahead that far.
-Board* Board::place() {
+Board* Board::place(int &row_removed) {
   Board* new_board = new Board();
 
   while (check(*block)) {
@@ -240,7 +241,7 @@ Board* Board::place() {
     }
     new_board->bitmap[point.i][point.j] = 1;
   }
-  Board::remove_rows(&(new_board->bitmap));
+  row_removed = Board::remove_rows(&(new_board->bitmap));
 
   new_board->block = preview[0];
   for (int i = 1; i < preview.size(); i++) {
@@ -252,7 +253,7 @@ Board* Board::place() {
 
 // A static method that takes in a new_bitmap and removes any full rows from it.
 // Mutates the new_bitmap in place.
-void Board::remove_rows(Bitmap* new_bitmap) {
+in Board::remove_rows(Bitmap* new_bitmap) {
   int rows_removed = 0;
   for (int i = ROWS - 1; i >= 0; i--) {
     bool full = true;
@@ -275,11 +276,12 @@ void Board::remove_rows(Bitmap* new_bitmap) {
       (*new_bitmap)[i][j] = 0;
     }
   }
+  return rows_removed;
 }
 
 // get the landing height
-int get_landing_height(Board &board) {
-    return board.block->center.i;
+int get_landing_height(Block*) {
+    return block->center.i;
 }
 
 // get the number of holes in the board
@@ -329,6 +331,8 @@ string pick_move(Board board) {
       int prev_rotation = block->rotation;
       Board* new_board = board.place();
       // calculate score
+      int landing_height = get_landing_height(block);
+      int number_of_holes = get_number_of_holes(new_board);
       block->translation = prev_translation;
       block->rotation = prev_rotation;
     }
@@ -342,6 +346,8 @@ string pick_move(Board board) {
       int prev_rotation = block->rotation;
       Board* new_board = board.place();
       // calculate score
+      int landing_height = get_landing_height(block);
+      int number_of_holes = get_number_of_holes(new_board);
       block->translation = prev_translation;
       block->rotation = prev_rotation;
     }
