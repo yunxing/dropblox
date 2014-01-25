@@ -253,7 +253,7 @@ Board* Board::place(int &row_removed) {
 
 // A static method that takes in a new_bitmap and removes any full rows from it.
 // Mutates the new_bitmap in place.
-in Board::remove_rows(Bitmap* new_bitmap) {
+int Board::remove_rows(Bitmap* new_bitmap) {
   int rows_removed = 0;
   for (int i = ROWS - 1; i >= 0; i--) {
     bool full = true;
