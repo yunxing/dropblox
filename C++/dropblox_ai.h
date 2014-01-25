@@ -95,7 +95,7 @@ class Board {
   //
   // If there are no blocks left in the preview list, this method will fail badly!
   // This is okay because we don't expect to look ahead that far.
-  Board* place();
+  Board* place(int &);
 
   // A static method that takes in a new_bitmap and removes any full rows from it.
   // Mutates the new_bitmap in place.

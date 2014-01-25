@@ -280,17 +280,17 @@ int Board::remove_rows(Bitmap* new_bitmap) {
 }
 
 // get the landing height
-int get_landing_height(Block*) {
+int get_landing_height(Block* block) {
     return block->center.i;
 }
 
 // get the number of holes in the board
-int get_number_of_holes(Board &board) {
+int get_number_of_holes(Board *board) {
     int holes = 0;
     for (int i = ROWS - 1; i >= 0; i--) {
         int row_holes = 0;
         for (int j = 0; j < COLS; j++) {
-            if (board.bitmap[i][j] == 0) {
+            if (board->bitmap[i][j] == 0) {
                 row_holes++;
             }
         }
@@ -301,12 +301,12 @@ int get_number_of_holes(Board &board) {
 }
 
 // get row transitions
-int get_row_transitions(Board &board) {
+int get_row_transitions(Board *board) {
     int transitions = 0;
     int cell, last_cell = 1;
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
-            cell = board.bitmap[i][j];
+            cell = board->bitmap[i][j];
             if (cell != last_cell) {
                 ++transitions;
             }
@@ -322,12 +322,12 @@ int get_row_transitions(Board &board) {
 }
 
 // get column transitions
-int get_col_transitions(Board &board) {
+int get_col_transitions(Board *board) {
     int transitions = 0;
     int cell, last_cell = 1;
     for (int j = 0; j < COLS; j++) {
         for (int i = 0; i < ROWS; i++) {
-            cell = board.bitmap[i][j];
+            cell = board->bitmap[i][j];
             if (cell != last_cell) {
                 ++transitions;
             }
@@ -342,23 +342,23 @@ int get_col_transitions(Board &board) {
 }
 
 // get well sum
-int get_well_sum(Board &board) {
+int get_well_sum(Board *board) {
     int well_sum = 0;
     for (int col = 0; col < COLS; col++) {
         int has_a_roof = false;
         int found_well = false;
         for (int row = 0; row < ROWS; row++) {
-            if (board.bitmap[row][col]) {
+            if (board->bitmap[row][col]) {
                 has_a_roof = true;
             }
             if (!has_a_roof) {
-                bool leftcol = (col== 0) || board.bitmap[row][col - 1];
-                bool rightcol = (col == COLS - 1) || board.bitmap[row][col + 1];
-                if (!board.bitmap[row][col] && leftcol && rightcol) {
+                bool leftcol = (col== 0) || board->bitmap[row][col - 1];
+                bool rightcol = (col == COLS - 1) || board->bitmap[row][col + 1];
+                if (!board->bitmap[row][col] && leftcol && rightcol) {
                     if (!found_well) {
                         found_well = true;
                         for (int i = row; i < ROWS; i++) {
-                            if (!board.bitmap[i][col]) {
+                            if (!board->bitmap[i][col]) {
                                 well_sum++;
                             }
                         }
@@ -369,16 +369,28 @@ int get_well_sum(Board &board) {
     }
     return well_sum;
 }
-
+#define ROWS_REMOVED 0.378565931393
+#define ROW_TRANSITIONS -0.548886169599
+#define LANDING_HEIGHT -0.71240334146
+#define HOLES -1.99902287016
+#define WELL_SUMS -0.151923526632
+#define COL_TRANSITIONS -0.793256698244
 float calc_score(Board board) {
   Block* block = board.block;
   Point prev_translation = block->translation;
   int prev_rotation = block->rotation;
-  Board* new_board = board.place();
+  int row_removed = 0;
+  Board* new_board = board.place(row_removed);
   // calculate score
   float score = 0;
   int landing_height = get_landing_height(block);
   int number_of_holes = get_number_of_holes(new_board);
+  int row_transitions = get_row_transitions(new_board);
+  int col_transitions = get_col_transitions(new_board);
+  int well_sum = get_well_sum(new_board);
+  score = row_removed * ROWS_REMOVED + landing_height * LANDING_HEIGHT
+    + number_of_holes * HOLES + row_transitions * ROW_TRANSITIONS
+    + col_transitions * COL_TRANSITIONS + well_sum * WELL_SUMS;
 
   block->translation = prev_translation;
   block->rotation = prev_rotation;
