@@ -345,20 +345,82 @@ int get_col_transitions(Board &board) {
     return transitions;
 }
 
-string pick_move(Board board) {
+// get well sum
+int get_well_sum(Board &board) {
+    int well_sum = 0;
+    for (int col = 0; col < COLS; col++) {
+        int has_a_roof = false;
+        int found_well = false;
+        for (int row = 0; row < ROWS; row++) {
+            if (board.bitmap[row][col]) {
+                has_a_roof = true;
+            }
+            if (!has_a_roof) {
+                bool leftcol = (col== 0) || board.bitmap[row][col - 1];
+                bool rightcol = (col == COLS - 1) || board.bitmap[row][col + 1];
+                if (!board.bitmap[row][col] && leftcol && rightcol) {
+                    if (!found_well) {
+                        found_well = true;
+                        for (int i = row; i < ROWS; i++) {
+                            if (!board.bitmap[i][col]) {
+                                well_sum++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return well_sum;
+}
+
+float calc_score(Board board) {
   Block* block = board.block;
+  Point prev_translation = block->translation;
+  int prev_rotation = block->rotation;
+  Board* new_board = board.place();
+  // calculate score
+  float score = 0;
+  int landing_height = get_landing_height(block);
+  int number_of_holes = get_number_of_holes(new_board);
+
+  block->translation = prev_translation;
+  block->rotation = prev_rotation;
+  return score;
+}
+
+// only calculates left/right, rotation
+vector<string> get_moves(Block* block) {
+  vector<string> moves;
+  for (int i = 0; i < block->rotation - 1; ++i) {
+    moves.push_back("rotate");
+  }
+  if (block->translation.j > 0) {
+    for (int i = 0; i < block->translation.j; ++i) {
+      moves.push_back("right");
+    }
+  }
+  else if (block->translation.j < 0) {
+    for (int i = 0; i < -block->translation.j; ++i) {
+      moves.push_back("left");
+    }
+  }
+  return moves;
+}
+
+vector<string> pick_move(Board board) {
+  Block* block = board.block;
+  float max_score = 0.0f;
+  vector<string> best_moves;
   for (int i = 0; i < 4; ++i) {
     block->rotate();
     while (board.check(*block)) {
       block->left();
-      Point prev_translation = block->translation;
-      int prev_rotation = block->rotation;
-      Board* new_board = board.place();
-      // calculate score
-      int landing_height = get_landing_height(block);
-      int number_of_holes = get_number_of_holes(new_board);
-      block->translation = prev_translation;
-      block->rotation = prev_rotation;
+      float score = calc_score(board);
+      if (score > max_score) {
+        max_score = score;
+        best_moves = get_moves(block);
+      }
     }
 
     block->translation.i = 0;
@@ -366,16 +428,14 @@ string pick_move(Board board) {
 
     while (board.check(*block)) {
       block->right();
-      Point prev_translation = block->translation;
-      int prev_rotation = block->rotation;
-      Board* new_board = board.place();
-      // calculate score
-      int landing_height = get_landing_height(block);
-      int number_of_holes = get_number_of_holes(new_board);
-      block->translation = prev_translation;
-      block->rotation = prev_rotation;
+      float score = calc_score(board);
+      if (score > max_score) {
+        max_score = score;
+        best_moves = get_moves(block);
+      }
     }
   }
+  return best_moves;
 }
 
 int main(int argc, char** argv) {
@@ -389,12 +449,7 @@ int main(int argc, char** argv) {
 
   // Make some moves!
   vector<string> moves;
-  while (board.check(*board.block)) {
-    //cerr << board.block->center.i << ' ' << board.block->center.j << endl;
-    pick_move(board);
-    board.block->left();
-    moves.push_back("left");
-  }
+  moves = pick_move(board);
   // Ignore the last move, because it moved the block into invalid
   // position. Make all the rest.
   for (int i = 0; i < moves.size() - 1; i++) {
