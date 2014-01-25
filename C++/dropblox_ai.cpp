@@ -341,6 +341,35 @@ int get_col_transitions(Board &board) {
     return transitions;
 }
 
+// get well sum
+int get_well_sum(Board &board) {
+    int well_sum = 0;
+    for (int col = 0; col < COLS; col++) {
+        int has_a_roof = false;
+        int found_well = false;
+        for (int row = 0; row < ROWS; row++) {
+            if (board.bitmap[row][col]) {
+                has_a_roof = true;
+            }
+            if (!has_a_roof) {
+                bool leftcol = (col== 0) || board.bitmap[row][col - 1];
+                bool rightcol = (col == COLS - 1) || board.bitmap[row][col + 1];
+                if (!board.bitmap[row][col] && leftcol && rightcol) {
+                    if (!found_well) {
+                        found_well = true;
+                        for (int i = row; i < ROWS; i++) {
+                            if (!board.bitmap[i][col]) {
+                                well_sum++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return well_sum;
+}
+
 string pick_move(Board board) {
   Block* block = board.block;
   for (int i = 0; i < 4; ++i) {
