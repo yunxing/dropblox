@@ -278,8 +278,8 @@ void Board::remove_rows(Bitmap* new_bitmap) {
 }
 
 // get the landing height
-int get_landing_height(Board &board) {
-    return board.block->center.i;
+int get_landing_height(Block*) {
+    return block->center.i;
 }
 
 // get the number of holes in the board
@@ -308,6 +308,8 @@ string pick_move(Board board) {
       int prev_rotation = block->rotation;
       Board* new_board = board.place();
       // calculate score
+      int landing_height = get_landing_height(block);
+      int number_of_holes = get_number_of_holes(new_board);
       block->translation = prev_translation;
       block->rotation = prev_rotation;
     }
@@ -321,6 +323,8 @@ string pick_move(Board board) {
       int prev_rotation = block->rotation;
       Board* new_board = board.place();
       // calculate score
+      int landing_height = get_landing_height(block);
+      int number_of_holes = get_number_of_holes(new_board);
       block->translation = prev_translation;
       block->rotation = prev_rotation;
     }
