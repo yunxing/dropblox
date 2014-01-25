@@ -253,7 +253,7 @@ Board* Board::place(int &row_removed) {
 
 // A static method that takes in a new_bitmap and removes any full rows from it.
 // Mutates the new_bitmap in place.
-in Board::remove_rows(Bitmap* new_bitmap) {
+int Board::remove_rows(Bitmap* new_bitmap) {
   int rows_removed = 0;
   for (int i = ROWS - 1; i >= 0; i--) {
     bool full = true;
@@ -298,6 +298,76 @@ int get_number_of_holes(Board &board) {
         holes += row_holes;
     }
     return holes;
+}
+
+// get row transitions
+int get_row_transitions(Board &board) {
+    int transitions = 0;
+    int cell, last_cell = 1;
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            cell = board.bitmap[i][j];
+            if (cell != last_cell) {
+                ++transitions;
+            }
+            last_cell = cell;
+        }
+
+        if (cell == 0) {
+            ++transitions;
+        }
+        last_cell = 1;
+    }
+    return transitions;
+}
+
+// get column transitions
+int get_col_transitions(Board &board) {
+    int transitions = 0;
+    int cell, last_cell = 1;
+    for (int j = 0; j < COLS; j++) {
+        for (int i = 0; i < ROWS; i++) {
+            cell = board.bitmap[i][j];
+            if (cell != last_cell) {
+                ++transitions;
+            }
+            last_cell = cell;
+        }
+        if (cell == 0) {
+            ++transitions;
+        }
+        last_cell = 1;
+    }
+    return transitions;
+}
+
+// get well sum
+int get_well_sum(Board &board) {
+    int well_sum = 0;
+    for (int col = 0; col < COLS; col++) {
+        int has_a_roof = false;
+        int found_well = false;
+        for (int row = 0; row < ROWS; row++) {
+            if (board.bitmap[row][col]) {
+                has_a_roof = true;
+            }
+            if (!has_a_roof) {
+                bool leftcol = (col== 0) || board.bitmap[row][col - 1];
+                bool rightcol = (col == COLS - 1) || board.bitmap[row][col + 1];
+                if (!board.bitmap[row][col] && leftcol && rightcol) {
+                    if (!found_well) {
+                        found_well = true;
+                        for (int i = row; i < ROWS; i++) {
+                            if (!board.bitmap[i][col]) {
+                                well_sum++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return well_sum;
 }
 
 float calc_score(Board board) {
