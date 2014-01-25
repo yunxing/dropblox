@@ -277,6 +277,29 @@ void Board::remove_rows(Bitmap* new_bitmap) {
   }
 }
 
+string pick_move(Board board) {
+  Block* block = board.block;
+  for (int i = 0; i < 4; ++i) {
+    block->translation.i = 0;
+    block->translation.j = 0;
+    block->rotate();
+    while (board.check(*block)) {
+      block->left();
+      while (board.check(*block)) {
+        Board new_board = board.place();
+      }
+    }
+    block->translation.i = 0;
+    block->translation.j = 0;
+    while (board.check(*block)) {
+      block->right();
+      while (board.check(*block)) {
+        Board new_board = board.place();
+      }
+    }
+  }
+}
+
 int main(int argc, char** argv) {
   // Construct a JSON Object with the given game state.
   istringstream raw_state(argv[1]);
@@ -286,13 +309,14 @@ int main(int argc, char** argv) {
   // Construct a board from this Object.
   Board board(state);
 
-  //Make some moves!
+  // Make some moves!
   vector<string> moves;
   while (board.check(*board.block)) {
+    //cerr << board.block->center.i << ' ' << board.block->center.j << endl;
+    pick_move(board);
     board.block->left();
     moves.push_back("left");
   }
-
   // Ignore the last move, because it moved the block into invalid
   // position. Make all the rest.
   for (int i = 0; i < moves.size() - 1; i++) {
