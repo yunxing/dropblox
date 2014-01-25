@@ -1,8 +1,8 @@
 EXE_NAME = ./dropblox_ai
 
-CXXFLAGS += -std=c++0x -O3 -Wall -fopenmp
+CXXFLAGS += -std=c++0x -O3 -Wall
 
-$(EXE_NAME): src/dropblox_ai.cpp src/choose_move.cpp
+$(EXE_NAME): C++/dropblox_ai.cpp
 	clang++ $(CXXFLAGS) -o $@ $^
 
 clean:

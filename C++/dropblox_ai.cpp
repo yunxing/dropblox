@@ -286,12 +286,13 @@ int main(int argc, char** argv) {
   // Construct a board from this Object.
   Board board(state);
 
-  // Make some moves!
+  //Make some moves!
   vector<string> moves;
   while (board.check(*board.block)) {
     board.block->left();
     moves.push_back("left");
   }
+
   // Ignore the last move, because it moved the block into invalid
   // position. Make all the rest.
   for (int i = 0; i < moves.size() - 1; i++) {
