@@ -282,7 +282,7 @@ int Board::remove_rows(Bitmap* new_bitmap) {
 
 // get the landing height
 int get_landing_height(Block* block) {
-    return block->center.i;
+    return block->center.i + block->translation.i;
 }
 
 static int points_earned(int rows_cleared) {
@@ -308,7 +308,7 @@ int get_number_of_holes(Board *board) {
 // get row transitions
 int get_row_transitions(Board *board) {
     int transitions = 0;
-    int cell, last_cell = 1;
+    int cell, last_cell = 0;
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             cell = board->bitmap[i][j];
@@ -318,10 +318,7 @@ int get_row_transitions(Board *board) {
             last_cell = cell;
         }
 
-        if (cell == 0) {
-            ++transitions;
-        }
-        last_cell = 1;
+        last_cell = 0;
     }
     return transitions;
 }
@@ -329,7 +326,7 @@ int get_row_transitions(Board *board) {
 // get column transitions
 int get_col_transitions(Board *board) {
     int transitions = 0;
-    int cell, last_cell = 1;
+    int cell, last_cell = 0;
     for (int j = 0; j < COLS; j++) {
         for (int i = 0; i < ROWS; i++) {
             cell = board->bitmap[i][j];
@@ -338,10 +335,7 @@ int get_col_transitions(Board *board) {
             }
             last_cell = cell;
         }
-        if (cell == 0) {
-            ++transitions;
-        }
-        last_cell = 1;
+        last_cell = 0;
     }
     return transitions;
 }
@@ -376,11 +370,12 @@ int get_well_sum(Board *board) {
 }
 #define ROWS_REMOVED 0.378565931393
 #define ROW_TRANSITIONS -0.548886169599
-#define LANDING_HEIGHT -0.71240334146
+#define LANDING_HEIGHT 0.71240334146
 #define POINTS_EARNED 0.378565931393
 #define HOLES -1.99902287016
 #define WELL_SUMS -0.151923526632
 #define COL_TRANSITIONS -0.793256698244
+
 float calc_score(Board board) {
   Block* block = board.block;
   Point prev_translation = block->translation;
@@ -389,6 +384,12 @@ float calc_score(Board board) {
   Board* new_board = board.place(row_removed);
   // calculate score
   float score = 0;
+  for (int i = 0 ; i < ROWS; ++i) {
+    for (int j =0 ; j< COLS; ++j) {
+      cerr << new_board->bitmap[i][j] << ' ';
+    }
+    cerr << endl;
+  }
   int landing_height = get_landing_height(block);
   int number_of_holes = get_number_of_holes(new_board);
   int row_transitions = get_row_transitions(new_board);
@@ -399,6 +400,15 @@ float calc_score(Board board) {
     + number_of_holes * HOLES + row_transitions * ROW_TRANSITIONS
     + col_transitions * COL_TRANSITIONS + well_sum * WELL_SUMS
     + points * POINTS_EARNED;
+  cerr << "l_height: " << landing_height << endl;
+  cerr << "holes: " << number_of_holes << endl;
+  cerr << "r_trans: " << row_transitions << endl;
+  cerr << "c_trans: " << col_transitions << endl;
+  cerr << "well_sum: " << well_sum << endl;
+  cerr << "points: " << points << endl;
+  cerr << "score : " << score << endl;
+  cerr << "block pos : " << block->center.i + block->translation.i << " , " << block->center.j + block->translation.j << endl;
+  cerr << "==============================\n";
 
   block->translation = prev_translation;
   block->rotation = prev_rotation;
@@ -433,10 +443,12 @@ vector<string> pick_move(Board board) {
     block->rotate();
     while (board.check(*block)) {
       block->left();
-      float score = calc_score(board);
-      if (score > max_score) {
-        max_score = score;
-        best_moves = get_moves(block);
+      if (board.check(*block)) {
+        float score = calc_score(board);
+        if (score > max_score) {
+          max_score = score;
+          best_moves = get_moves(block);
+        }
       }
     }
 
@@ -445,10 +457,12 @@ vector<string> pick_move(Board board) {
 
     while (board.check(*block)) {
       block->right();
-      float score = calc_score(board);
-      if (score > max_score) {
-        max_score = score;
-        best_moves = get_moves(block);
+      if (board.check(*block)) {
+        float score = calc_score(board);
+        if (score > max_score) {
+          max_score = score;
+          best_moves = get_moves(block);
+        }
       }
     }
   }
@@ -464,6 +478,7 @@ int main(int argc, char** argv) {
   // Construct a board from this Object.
   Board board(state);
 
+  cerr << "HERE\n";
   // Make some moves!
   vector<string> moves;
   moves = pick_move(board);
