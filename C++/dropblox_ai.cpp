@@ -1,4 +1,5 @@
 #include "dropblox_ai.h"
+#include "float.h"
 
 using namespace json;
 using namespace std;
@@ -403,6 +404,7 @@ float calc_score(Board board) {
 
 // only calculates left/right, rotation
 vector<string> get_moves(Block* block) {
+  cerr << block->rotation << endl;
   vector<string> moves;
   for (int i = 0; i < block->rotation - 1; ++i) {
     moves.push_back("rotate");
@@ -422,7 +424,7 @@ vector<string> get_moves(Block* block) {
 
 vector<string> pick_move(Board board) {
   Block* block = board.block;
-  float max_score = 0.0f;
+  float max_score = -99999999;
   vector<string> best_moves;
   for (int i = 0; i < 4; ++i) {
     block->rotate();
