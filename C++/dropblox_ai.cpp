@@ -308,7 +308,7 @@ int get_number_of_holes(Board *board) {
 // get row transitions
 int get_row_transitions(Board *board) {
     int transitions = 0;
-    int cell, last_cell = 0;
+    int cell, last_cell = 1;
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             cell = board->bitmap[i][j];
@@ -317,8 +317,11 @@ int get_row_transitions(Board *board) {
             }
             last_cell = cell;
         }
+        if (cell == 0) {
+          ++transitions;
+        }
 
-        last_cell = 0;
+        last_cell = 1;
     }
     return transitions;
 }
@@ -326,7 +329,7 @@ int get_row_transitions(Board *board) {
 // get column transitions
 int get_col_transitions(Board *board) {
     int transitions = 0;
-    int cell, last_cell = 0;
+    int cell, last_cell = 1;
     for (int j = 0; j < COLS; j++) {
         for (int i = 0; i < ROWS; i++) {
             cell = board->bitmap[i][j];
@@ -335,7 +338,10 @@ int get_col_transitions(Board *board) {
             }
             last_cell = cell;
         }
-        last_cell = 0;
+        if (cell == 0) {
+          ++transitions;
+        }
+        last_cell = 1;
     }
     return transitions;
 }
@@ -417,9 +423,9 @@ float calc_score(Board board) {
 
 // only calculates left/right, rotation
 vector<string> get_moves(Block* block) {
-  cerr << block->rotation << endl;
+  cerr << "rotation: " << block->rotation << endl;
   vector<string> moves;
-  for (int i = 0; i < block->rotation - 1; ++i) {
+  for (int i = 0; i < block->rotation; ++i) {
     moves.push_back("rotate");
   }
   if (block->translation.j > 0) {
@@ -440,7 +446,8 @@ vector<string> pick_move(Board board) {
   float max_score = -99999999;
   vector<string> best_moves;
   for (int i = 0; i < 4; ++i) {
-    block->rotate();
+    block->translation.i = 0;
+    block->translation.j = 0;
     while (board.check(*block)) {
       block->left();
       if (board.check(*block)) {
@@ -448,6 +455,10 @@ vector<string> pick_move(Board board) {
         if (score > max_score) {
           max_score = score;
           best_moves = get_moves(block);
+          //cerr << "size " << best_moves.size() << endl;
+          for (int z = 0; z < best_moves.size(); ++z) {
+            cerr << best_moves[z]<<endl;
+          }
         }
       }
     }
@@ -462,10 +473,19 @@ vector<string> pick_move(Board board) {
         if (score > max_score) {
           max_score = score;
           best_moves = get_moves(block);
+          for (int z = 0; z < best_moves.size(); ++z) {
+            cerr << best_moves[z]<<endl;
+          }
         }
       }
     }
+    block->rotate();
   }
+  cerr << "BEST: " << max_score << endl;
+  for (int z = 0; z < best_moves.size(); ++z) {
+    cerr << best_moves[z]<<endl;
+  }
+
   return best_moves;
 }
 
@@ -484,7 +504,7 @@ int main(int argc, char** argv) {
   moves = pick_move(board);
   // Ignore the last move, because it moved the block into invalid
   // position. Make all the rest.
-  for (int i = 0; i < moves.size() - 1; i++) {
+  for (int i = 0; i < moves.size(); i++) {
     cout << moves[i] << endl;
   }
 }
